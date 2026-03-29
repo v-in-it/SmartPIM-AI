@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings — SmartPIM AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --surface2: #1c1c28;
+            --border: #2a2a3a;
+            --accent: #7c6aff;
+            --accent2: #00e5c0;
+            --danger: #ff4d6d;
+            --success: #00e5c0;
+            --text: #f0f0ff;
+            --text2: #8888aa;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px; opacity: 0.3; pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(124,106,255,0.15) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+        .wrapper { position: relative; z-index: 1; }
+
+        .sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
+            background: var(--surface); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 32px 20px; z-index: 100;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+        .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-label { font-size: 10px; font-weight: 500; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; padding-left: 12px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s; margin-bottom: 4px; }
+        .nav-item:hover, .nav-item.active { background: rgba(124,106,255,0.12); color: var(--text); }
+        .nav-item.active { color: var(--accent); }
+        .nav-item span { font-size: 16px; }
+        .sidebar-footer { margin-top: auto; padding: 16px; background: rgba(124,106,255,0.08); border: 1px solid rgba(124,106,255,0.2); border-radius: 12px; }
+        .sidebar-footer p { font-size: 11px; color: var(--text2); line-height: 1.6; }
+        .sidebar-footer strong { color: var(--accent2); }
+
+        .main { margin-left: 240px; padding: 32px 40px; min-height: 100vh; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; }
+        .page-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--text); }
+        .page-title span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Flash messages */
+        .flash { padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 500; margin-bottom: 24px; }
+        .flash.success { background: rgba(0,229,192,0.1); border: 1px solid rgba(0,229,192,0.3); color: var(--success); }
+        .flash.warning { background: rgba(255,200,0,0.1); border: 1px solid rgba(255,200,0,0.3); color: #ffc800; }
+        .flash.danger  { background: rgba(255,77,109,0.1); border: 1px solid rgba(255,77,109,0.3); color: var(--danger); }
+
+        /* Cards */
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 900px) { .settings-grid { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px;
+        }
+        .card-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+        .card-sub { font-size: 12px; color: var(--text2); margin-bottom: 24px; }
+
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        input[type="text"], input[type="password"] {
+            width: 100%; padding: 10px 14px;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif;
+            font-size: 14px; transition: border-color 0.2s; outline: none;
+        }
+        input:focus { border-color: var(--accent); }
+        input::placeholder { color: var(--text2); }
+
+        .hint { font-size: 11px; color: var(--text2); margin-top: 5px; }
+        .hint a { color: var(--accent); text-decoration: none; }
+        .hint a:hover { text-decoration: underline; }
+
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
+            border-radius: 10px; font-size: 13px; font-weight: 600;
+            font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; transition: all 0.2s;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), #9b8aff); color: white; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(124,106,255,0.4); }
+        .btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+        .btn-ghost:hover { color: var(--text); border-color: var(--accent2); }
+        .btn-danger { background: rgba(255,77,109,0.15); color: var(--danger); border: 1px solid rgba(255,77,109,0.3); }
+
+        /* Test result */
+        .test-result {
+            margin-top: 20px; padding: 14px 16px; border-radius: 10px; font-size: 13px;
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .test-result.ok { background: rgba(0,229,192,0.08); border: 1px solid rgba(0,229,192,0.25); color: var(--success); }
+        .test-result.fail { background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.25); color: var(--danger); }
+
+        /* Info card */
+        .info-card {
+            background: rgba(124,106,255,0.06); border: 1px solid rgba(124,106,255,0.2);
+            border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;
+            font-size: 13px; color: var(--text2); line-height: 1.8;
+        }
+        .info-card strong { color: var(--accent2); }
+        .step { display: flex; gap: 12px; margin-bottom: 10px; }
+        .step-num { min-width: 22px; height: 22px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; }
+
+        .model-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(0,229,192,0.1); border: 1px solid rgba(0,229,192,0.2);
+            color: var(--accent2); padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; font-family: monospace; margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🛒</div>
+            <div class="logo-text">SmartPIM</div>
+        </div>
+        <div class="nav-label">Menu</div>
+        <a href="/" class="nav-item"><span>📦</span> Products</a>
+        <a href="/add" class="nav-item"><span>➕</span> Add Product</a>
+        <div style="margin-top: 24px;">
+            <div class="nav-label">System</div>
+            <a href="/settings" class="nav-item active"><span>⚙️</span> Settings</a>
+        </div>
+        <div class="sidebar-footer">
+            <p>🤖 <strong>AI Powered</strong><br>
+            Descriptions generated via Claude AI. WooCommerce sync ready.</p>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <div class="page-title">System <span>Settings</span></div>
+                <div style="font-size:13px; color:var(--text2); margin-top:4px;">Configure WooCommerce connection and AI credentials</div>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        {% if test_result %}
+        <div class="test-result {{ 'ok' if test_result.ok else 'fail' }}">
+            <span>{{ '✅' if test_result.ok else '❌' }}</span>
+            <span>{{ test_result.msg }}</span>
+        </div>
+        {% endif %}
+
+        <div class="settings-grid">
+
+            <!-- WooCommerce Settings -->
+            <div class="card">
+                <div class="card-title">🔌 WooCommerce Connection</div>
+                <div class="card-sub">Connect to your local WordPress + WooCommerce installation</div>
+
+                <div class="info-card">
+                    <strong>How to get API keys from Local WordPress:</strong>
+                    <div class="step"><div class="step-num">1</div><div>Open Local app → start your site → click <strong>Open Site</strong></div></div>
+                    <div class="step"><div class="step-num">2</div><div>Go to <strong>WooCommerce → Settings → Advanced → REST API</strong></div></div>
+                    <div class="step"><div class="step-num">3</div><div>Click <strong>Add key</strong> → Description: SmartPIM → Permissions: <strong>Read/Write</strong> → Generate</div></div>
+                    <div class="step"><div class="step-num">4</div><div>Copy the Consumer Key (ck_...) and Consumer Secret (cs_...) below</div></div>
+                </div>
+
+                <form method="POST">
+                    <input type="hidden" name="action" value="save">
+                    <div class="form-group">
+                        <label>WordPress Site URL</label>
+                        <input type="text" name="wc_url" value="{{ wc_url }}" placeholder="http://mysite.local">
+                        <div class="hint">Your Local by Flywheel URL, e.g. <code>http://smartpim.local</code></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Consumer Key</label>
+                        <input type="text" name="wc_key" value="{{ wc_key }}" placeholder="ck_xxxxxxxxxxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>Consumer Secret</label>
+                        <input type="password" name="wc_secret" value="{{ wc_secret }}" placeholder="cs_xxxxxxxxxxxxxxxx">
+                    </div>
+                    <div class="btn-row">
+                        <button type="submit" class="btn btn-primary">💾 Save WooCommerce Settings</button>
+                    </div>
+                </form>
+
+                <form method="POST" style="margin-top: 12px;">
+                    <input type="hidden" name="action" value="test_wc">
+                    <button type="submit" class="btn btn-ghost">🔌 Test WooCommerce Connection</button>
+                </form>
+            </div>
+
+            <!-- AI Settings -->
+            <div class="card">
+                <div class="card-title">🤖 Claude AI Settings</div>
+                <div class="card-sub">Configure your Anthropic API key for AI-powered descriptions</div>
+
+                <div class="info-card">
+                    <strong>Get your API key:</strong>
+                    <div class="step"><div class="step-num">1</div><div>Go to <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div></div>
+                    <div class="step"><div class="step-num">2</div><div>Click <strong>API Keys</strong> → <strong>Create Key</strong></div></div>
+                    <div class="step"><div class="step-num">3</div><div>Copy the key (starts with <code>sk-ant-api03-</code>) and paste below</div></div>
+                </div>
+
+                <form method="POST">
+                    <input type="hidden" name="action" value="save">
+                    <div class="form-group">
+                        <label>Anthropic API Key</label>
+                        <input type="password" name="anthropic_key" value="{{ anthropic_key }}" placeholder="sk-ant-api03-...">
+                        <div class="hint">Never share this key publicly.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Active Model</label>
+                        <div class="model-badge">✨ {{ model }}</div>
+                        <div class="hint" style="margin-top:8px;">Model is hardcoded to the latest Claude Sonnet.</div>
+                    </div>
+                    <div class="btn-row">
+                        <button type="submit" class="btn btn-primary">💾 Save AI Settings</button>
+                    </div>
+                </form>
+
+                <form method="POST" style="margin-top: 12px;">
+                    <input type="hidden" name="action" value="test_ai">
+                    <button type="submit" class="btn btn-ghost">🧪 Test AI Description</button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Quick status -->
+        <div class="card" style="margin-top: 24px;">
+            <div class="card-title">📋 Current Configuration Status</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;">
+                <div style="background: var(--surface2); border-radius: 10px; padding: 16px;">
+                    <div style="font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">WooCommerce URL</div>
+                    <div style="font-size:13px; color:{{ 'var(--success)' if wc_url and wc_url != 'http://localhost' else 'var(--danger)' }};">
+                        {{ '✓ ' + wc_url if wc_url else '✗ Not set' }}
+                    </div>
+                </div>
+                <div style="background: var(--surface2); border-radius: 10px; padding: 16px;">
+                    <div style="font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">WC API Keys</div>
+                    <div style="font-size:13px; color:{{ 'var(--success)' if wc_key and wc_key != 'ck_test123' else 'var(--danger)' }};">
+                        {{ '✓ Configured' if wc_key and wc_key != 'ck_test123' else '✗ Using placeholder' }}
+                    </div>
+                </div>
+                <div style="background: var(--surface2); border-radius: 10px; padding: 16px;">
+                    <div style="font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Anthropic API Key</div>
+                    <div style="font-size:13px; color:{{ 'var(--success)' if anthropic_key and not anthropic_key.endswith('xxxx') else 'var(--danger)' }};">
+                        {{ '✓ Set (' + anthropic_key[:12] + '...)' if anthropic_key and not anthropic_key.endswith('xxxx') else '✗ Not set / placeholder' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

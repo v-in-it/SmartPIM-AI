@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product — SmartPIM AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --surface2: #1c1c28;
+            --border: #2a2a3a;
+            --accent: #7c6aff;
+            --accent2: #00e5c0;
+            --danger: #ff4d6d;
+            --success: #00e5c0;
+            --text: #f0f0ff;
+            --text2: #8888aa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(124,106,255,0.15) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper { position: relative; z-index: 1; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 240px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 32px 20px;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text2);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding-left: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: var(--text2);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(124,106,255,0.12);
+            color: var(--text);
+        }
+
+        .nav-item.active { color: var(--accent); }
+        .nav-item span { font-size: 16px; }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 16px;
+            background: rgba(124,106,255,0.08);
+            border: 1px solid rgba(124,106,255,0.2);
+            border-radius: 12px;
+        }
+
+        .sidebar-footer p {
+            font-size: 11px;
+            color: var(--text2);
+            line-height: 1.6;
+        }
+
+        .sidebar-footer strong { color: var(--accent2); }
+
+        /* Main */
+        .main {
+            margin-left: 240px;
+            padding: 32px 40px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 36px;
+        }
+
+        .page-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .page-title span {
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-ghost {
+            background: var(--surface2);
+            color: var(--text2);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+        /* Form layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .form-card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124,106,255,0.1);
+        }
+
+        input::placeholder, textarea::placeholder { color: var(--text2); }
+
+        textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* AI Button */
+        .ai-generate-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(124,106,255,0.15), rgba(0,229,192,0.15));
+            border: 1px solid rgba(124,106,255,0.3);
+            border-radius: 10px;
+            color: var(--accent);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .ai-generate-btn:hover {
+            background: linear-gradient(135deg, rgba(124,106,255,0.25), rgba(0,229,192,0.25));
+            transform: translateY(-1px);
+        }
+
+        .ai-generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ai-status {
+            font-size: 12px;
+            color: var(--accent2);
+            margin-bottom: 8px;
+            min-height: 18px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Submit button */
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent), #9b8aff);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 20px rgba(124,106,255,0.3);
+            margin-top: 8px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 28px rgba(124,106,255,0.5);
+        }
+
+        /* AI Info Card */
+        .ai-info-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            animation: fadeUp 0.5s ease 0.2s both;
+        }
+
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(90deg, rgba(124,106,255,0.15), rgba(0,229,192,0.15));
+            border: 1px solid rgba(124,106,255,0.3);
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .ai-info-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .ai-info-desc {
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .ai-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ai-step {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .ai-step-num {
+            width: 24px;
+            height: 24px;
+            background: rgba(124,106,255,0.15);
+            border: 1px solid rgba(124,106,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .ai-step-text {
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.5;
+            padding-top: 2px;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        .woo-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(0,229,192,0.06);
+            border: 1px solid rgba(0,229,192,0.15);
+            border-radius: 10px;
+            font-size: 12px;
+            color: var(--text2);
+        }
+
+        .woo-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent2);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px; height: 14px;
+            border: 2px solid rgba(0,229,192,0.3);
+            border-top-color: var(--accent2);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🛒</div>
+            <div class="logo-text">SmartPIM</div>
+        </div>
+
+        <div class="nav-label">Menu</div>
+        <a href="/" class="nav-item"><span>📦</span> Products</a>
+        <a href="/add" class="nav-item active"><span>➕</span> Add Product</a>
+
+        <div style="margin-top: 24px;">
+            <div class="nav-label">System</div>
+            <a href="/settings" class="nav-item"><span>⚙️</span> Settings</a>
+            <a 
+        </div>
+
+        <div class="sidebar-footer">
+            <p>🤖 <strong>AI Powered</strong><br>
+            Descriptions generated via Claude AI. WooCommerce sync ready.</p>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <div class="page-title">Add <span>Product</span></div>
+                <div style="font-size:13px; color:var(--text2); margin-top:4px;">Fill in details or let AI generate a description</div>
+            </div>
+            <a href="/" class="btn btn-ghost">← Back to Products</a>
+        </div>
+
+        <div class="form-grid">
+            <!-- Form -->
+            <div class="form-card">
+                <div class="form-card-title">📦 Product Details</div>
+                <form method="POST">
+                    <div class="form-group">
+                        <label>Product Name *</label>
+                        <input type="text" id="name" name="name" placeholder="e.g. Wireless Noise Cancelling Headphones" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>SKU *</label>
+                            <input type="text" name="sku" placeholder="e.g. WH-1234" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Price (₹) *</label>
+                            <input type="text" id="price" name="price" placeholder="e.g. 2999" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <div class="ai-status" id="ai-status"></div>
+                        <button type="button" class="ai-generate-btn" id="aiBtn" onclick="generateDescription()">
+                            ✨ Generate AI Description
+                        </button>
+                        <textarea id="description" name="description" rows="5"
+                                  placeholder="Click above to generate with AI, or type manually..."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">💾 Save Product</button>
+                </form>
+            </div>
+
+            <!-- AI Info -->
+            <div>
+                <div class="ai-info-card">
+                    <div class="ai-badge">✨ AI Feature</div>
+                    <div class="ai-info-title">Claude AI Description Generator</div>
+                    <div class="ai-info-desc">
+                        Automatically generate professional, SEO-friendly product descriptions using Claude AI — just enter the product name and price.
+                    </div>
+
+                    <div class="ai-steps">
+                        <div class="ai-step">
+                            <div class="ai-step-num">1</div>
+                            <div class="ai-step-text">Enter your product name and price</div>
+                        </div>
+                        <div class="ai-step">
+                            <div class="ai-step-num">2</div>
+                            <div class="ai-step-text">Click "Generate AI Description"</div>
+                        </div>
+                        <div class="ai-step">
+                            <div class="ai-step-num">3</div>
+                            <div class="ai-step-text">AI writes a professional description instantly</div>
+                        </div>
+                        <div class="ai-step">
+                            <div class="ai-step-num">4</div>
+                            <div class="ai-step-text">Edit if needed, then save the product</div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="woo-status">
+                        <div class="woo-dot"></div>
+                        <span>WooCommerce sync is <strong style="color:var(--accent2)">active</strong> — products can be pushed to your store after saving.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+async function generateDescription() {
+    const name = document.getElementById('name').value.trim();
+    const price = document.getElementById('price').value.trim();
+    const btn = document.getElementById('aiBtn');
+    const status = document.getElementById('ai-status');
+
+    if (!name) {
+        status.innerHTML = '⚠️ Please enter a product name first';
+        status.style.color = '#ff4d6d';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Generating...';
+    status.innerHTML = '<span class="spinner"></span> Claude AI is writing your description...';
+    status.style.color = 'var(--accent2)';
+
+    try {
+        const response = await fetch('/generate-description', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, price })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.description) {
+            const msg = data.error || `Request failed (${response.status})`;
+            status.innerHTML = '❌ ' + msg;
+            status.style.color = 'var(--danger)';
+            return;
+        }
+        document.getElementById('description').value = data.description;
+        status.innerHTML = '✅ AI description generated successfully!';
+        status.style.color = 'var(--success)';
+    } catch (err) {
+        status.innerHTML = '❌ Error generating description. Try again.';
+        status.style.color = 'var(--danger)';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '✨ Regenerate AI Description';
+    }
+}
+</script>
+</body>
+</html>
